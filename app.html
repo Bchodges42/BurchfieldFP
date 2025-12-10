@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livestock Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/darkly/bootstrap.min.css" rel="stylesheet">    <!-- Uses thr Darkly theme -->
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">Livestock Management System</h2>
+        
+        <div class="d-flex justify-content-center mb-4">
+            <button type="button" class="btn btn-primary me-2" id="btnShowAnimals">Animals</button>
+            <button type="button" class="btn btn-primary me-2" id="btnShowFeeding">Feeding Schedule</button>
+            <button type="button" class="btn btn-primary" id="btnShowVetVisits">Vet Visits</button>
+        </div>
+
+        <div class="card" id="card1">
+            <div class="card-body">
+                <h5 class="card-title">Animal Information</h5>
+                
+                <div id="divAddAnimal">
+                    <form id="formAnimal">
+                        <div class="mb-3">
+                            <label for="txtAnimalType" class="form-label">Type of Animal</label>
+                            <input type="text" class="form-control" id="txtAnimalType" placeholder="e.g., Cattle, Horse, Pig" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtBreed" class="form-label">Breed</label>
+                            <input type="text" class="form-control" id="txtBreed" placeholder="Enter breed" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtDOB" class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="txtDOB" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtSire" class="form-label">Sire (Father)</label>
+                            <input type="text" class="form-control" id="txtSire" placeholder="Father's ID or name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtDam" class="form-label">Dam (Mother)</label>
+                            <input type="text" class="form-control" id="txtDam" placeholder="Mother's ID or name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtBirthWeight" class="form-label">Weight/Size at Birth</label>
+                            <input type="text" class="form-control" id="txtBirthWeight" placeholder="e.g., 75 lbs" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtAnimalID" class="form-label">ID Number</label>
+                            <input type="text" class="form-control" id="txtAnimalID" placeholder="Unique animal ID" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="txtDescription" rows="2" placeholder="Physical description, markings, etc." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtLocation" class="form-label">Location (Field/Farm)</label>
+                            <input type="text" class="form-control" id="txtLocation" placeholder="e.g., North Pasture, Barn 2" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtAnimalNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="txtAnimalNotes" rows="2" placeholder="Additional notes"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="btnSaveAnimal">Save Animal</button>
+                    </form>
+                </div>                
+            </div>
+        </div>
+
+      
+        <div class="card d-none" id="card2">
+            <div class="card-body">
+                <h5 class="card-title">Feeding Schedule</h5>
+                
+       <div id="divAddFeeding">
+                    <form id="formFeeding">
+                        <div class="mb-3">
+                            <label for="selFeedingAnimalID" class="form-label">Animal ID</label>
+                            <input type="text" class="form-control" id="txtFeedingAnimalID" placeholder="Enter Animal" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtTimeOfDay" class="form-label">Time of Day</label>
+                            <input type="time" class="form-control" id="txtTimeOfDay" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtHowMuch" class="form-label">How Much</label>
+                            <input type="text" class="form-control" id="txtHowMuch" placeholder="e.g., 5 lbs, 2 cups" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtWhatFeeding" class="form-label">What They're Feeding</label>
+                            <input type="text" class="form-control" id="txtWhatFeeding" placeholder="e.g., Hay, Grain, Pellets" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtFeedingNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="txtFeedingNotes" rows="2" placeholder="Additional feeding notes"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="btnSaveFeeding">Save Feeding Schedule</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card d-none" id="card3">
+            <div class="card-body">
+                <h5 class="card-title">Veterinary Visits</h5>
+                
+                <div id="divAddVetVisit">
+                    <form id="formVetVisit">
+                        <div class="mb-3">
+                            <label for="txtVetAnimalID" class="form-label">Animal ID</label>
+                            <input type="text" class="form-control" id="txtVetAnimalID" placeholder="Enter Animal ID" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtVisitDate" class="form-label">Visit Date</label>
+                            <input type="date" class="form-control" id="txtVisitDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="selVisitReason" class="form-label">Reason</label>
+                            <select class="form-select" id="selVisitReason" required>
+                                <option value="">Choose reason...</option>
+                                <option value="Routine">Routine</option>
+                                <option value="Emergency">Emergency</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtInoculations" class="form-label">Inoculations</label>
+                            <input type="text" class="form-control" id="txtInoculations" placeholder="Vaccines administered" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtSizeAtVisit" class="form-label">Size at Date of Visit</label>
+                            <input type="text" class="form-control" id="txtSizeAtVisit" placeholder="e.g., 450 lbs" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtVetName" class="form-label">Veterinary Name</label>
+                            <input type="text" class="form-control" id="txtVetName" placeholder="Dr. Name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="txtVetNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="txtVetNotes" rows="3" placeholder="Visit details and observations"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="btnSaveVetVisit">Save Vet Visit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="app.js"></script>
+</body>
+</html>

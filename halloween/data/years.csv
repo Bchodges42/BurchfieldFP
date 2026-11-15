@@ -1,0 +1,19 @@
+Year,Date,Day of Week,Night Type,Year Total,Peak Interval,Peak Interval Count,COVID Year,Note,Sunset EDT,Night Temp F,Night Feels Like F,Temp at 6pm F,Night Precip In,Rain or Dry,Night Max Wind Mph,Night Max Gust Mph,Night Cloud Cover Pct,Night Humidity Pct,Conditions,Daily High F,Daily Low F,Daily Precip In,Temperature Band,Vs Avg,Pct Vs Avg,YoY Change
+2008,2008-10-31,Friday,Weekend night (Fri/Sat),492,7:00–7:30,147,No,,6:37 pm,59.8,55.2,63.7,0.0,Dry,5.8,15.2,0,50,Clear,67.8,37.6,0.0,Mild (50–59°F),-106,-0.178,
+2009,2009-10-31,Saturday,Weekend night (Fri/Sat),542,6:30–7:00,177,No,,6:37 pm,51.8,45.7,53.4,0.0,Dry,6.7,21.3,76,48,Overcast,63.8,43.6,0.717,Chilly (< 50°F),-56,-0.094,50.0
+2010,2010-10-31,Sunday,School night (Sun–Thu),726,7:00–7:30,187,No,,6:37 pm,50.7,42.7,53.2,0.0,Dry,7.5,19.5,1,35,Clear,56.3,41.6,0.0,Chilly (< 50°F),128,0.213,184.0
+2011,2011-10-31,Monday,School night (Sun–Thu),869,7:00–7:30,252,No,,6:38 pm,51.7,47.4,55.2,0.0,Dry,4.6,12.8,41,56,Partly cloudy,56.4,42.4,0.051,Chilly (< 50°F),271,0.452,143.0
+2012,2012-10-31,Wednesday,School night (Sun–Thu),673,7:00–7:30,232,No,,6:37 pm,39.9,32.7,40.3,0.008,Dry,9.5,22.1,100,83,Light drizzle,41.6,39.3,0.13,Chilly (< 50°F),75,0.125,-196.0
+2013,2013-10-31,Thursday,School night (Sun–Thu),391,6:00–6:30,119,No,Rain plus strong wind (gusts to 47 mph) — lowest count outside 2020,6:37 pm,63.1,58.4,61.9,0.047,Rain,19.7,47.4,100,89,Light rain,64.5,59.6,0.543,Mild (50–59°F),-207,-0.347,-282.0
+2014,2014-10-31,Friday,Weekend night (Fri/Sat),454,7:00–7:30,124,No,,6:37 pm,38.9,32.3,39.2,0.024,Rain,8.9,23.3,75,85,Light drizzle,48.4,33.6,0.236,Chilly (< 50°F),-144,-0.241,63.0
+2015,2015-10-31,Saturday,Weekend night (Fri/Sat),747,6:30–7:00,188,No,,6:38 pm,56.8,51.8,56.8,0.0,Dry,10.4,18.8,100,63,Overcast,57.0,41.2,0.031,Mild (50–59°F),149,0.248,293.0
+2016,2016-10-31,Monday,School night (Sun–Thu),822,6:30–7:00,226,No,,6:37 pm,62.0,60.1,63.4,0.0,Dry,6.2,11.2,100,69,Overcast,64.1,49.8,0.0,Warm (60°F +),224,0.374,75.0
+2017,2017-10-31,Tuesday,School night (Sun–Thu),776,7:00–7:30,192,No,,6:37 pm,41.0,35.7,44.4,0.0,Dry,3.8,9.6,79,67,Overcast,46.4,34.2,0.0,Chilly (< 50°F),178,0.297,-46.0
+2018,2018-10-31,Wednesday,School night (Sun–Thu),600,6:30–7:00,176,No,,6:37 pm,62.5,63.7,63.6,0.099,Rain,8.3,21.5,100,96,Light rain,66.2,55.6,0.547,Warm (60°F +),2,0.003,-176.0
+2019,2019-10-31,Thursday,School night (Sun–Thu),523,6:30–7:00,145,No,"Storm front: 0.8 in of rain earlier in the day, then 42 mph gusts and a 24°F wind chill",6:38 pm,37.4,24.4,38.3,0.0,Dry,20.5,42.1,100,61,Overcast,59.4,34.3,0.803,Chilly (< 50°F),-75,-0.126,-77.0
+2020,2020-10-31,Saturday,Weekend night (Fri/Sat),219,7:30–8:00,56,Yes,COVID-19: candy delivered by two long chutes; some families stayed home,6:37 pm,49.7,44.4,53.0,0.0,Dry,6.4,15.9,7,65,Mostly clear,55.7,35.0,0.0,Chilly (< 50°F),-379,-0.634,-304.0
+2021,2021-10-31,Sunday,School night (Sun–Thu),487,6:30–7:00,150,No,,6:37 pm,58.6,53.7,60.5,0.0,Dry,9.6,22.4,100,59,Overcast,62.7,50.1,0.0,Mild (50–59°F),-111,-0.186,268.0
+2022,2022-10-31,Monday,School night (Sun–Thu),512,6:30–7:00,147,No,,6:37 pm,61.2,60.2,64.3,0.02,Rain,6.5,17.4,62,78,Light drizzle,68.3,56.5,0.146,Warm (60°F +),-86,-0.144,25.0
+2023,2023-10-31,Tuesday,School night (Sun–Thu),570,6:30–7:00,178,No,,6:38 pm,39.9,29.4,42.0,0.0,Dry,13.9,28.0,40,49,Overcast,45.8,31.0,0.0,Chilly (< 50°F),-28,-0.048,58.0
+2024,2024-10-31,Thursday,School night (Sun–Thu),631,6:30–7:00,203,No,,6:37 pm,66.9,67.0,68.1,0.024,Rain,12.4,27.7,100,89,Light drizzle,74.2,61.4,0.24,Warm (60°F +),33,0.054,61.0
+2025,2025-10-31,Friday,Weekend night (Fri/Sat),738,6:30–7:00,260,No,Record half-hour: 260 kids between 6:30 and 7:00 pm,6:37 pm,49.9,45.1,52.3,0.0,Dry,5.9,17.4,17,67,Mostly clear,53.8,40.2,0.004,Chilly (< 50°F),140,0.233,107.0

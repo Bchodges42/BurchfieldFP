@@ -2,7 +2,7 @@
 
 Tableau project for the Halloween assignment. It asks how the number of trick-or-treaters at one Cincinnati porch (ZIP 45207, 2008–2025) depends on the **weather**, the **time of night and darkness**, and the **day of the week**.
 
-Interactive preview of the finished dashboard: https://claude.ai/artifact/FHeedV4cFXGQhvESgZ6VxR
+Original HTML concept preview (not Tableau output; final workbook uses a purple heatmap): https://claude.ai/artifact/FHeedV4cFXGQhvESgZ6VxR
 
 ## What's in this folder
 
@@ -10,13 +10,14 @@ Interactive preview of the finished dashboard: https://claude.ai/artifact/FHeedV
 |---|---|
 | `tableau/Halloween Weather and Trick-or-Treaters.twbx` | **The Tableau workbook** (data packaged inside): 9 sheets plus a 1920 × 1080 dashboard |
 | `tableau/Halloween Weather and Trick-or-Treaters.twb` + `tableau/Halloween_Enriched.xlsx` | The same workbook unpackaged. Keep both files in the same folder. |
+| `tableau/Halloween Dashboard.png` | Actual full-dashboard PNG exported by Tableau Desktop (not the HTML preview) |
 | `data/Halloween_Enriched.xlsx` | The enriched data source. Sheets: **Intervals** (108 rows, used by Tableau), **Year Summary** (18 rows), **Data Dictionary**, **Sources** |
 | `data/raw/HalloweenTableau2025.xlsx` | The original course file, unchanged |
 | `data/weather/*.json` | Raw hourly weather pulled from Open-Meteo, one file per Halloween |
 | `preview/index.html` | Browser version of the dashboard (the link above) |
 | `scripts/build_data.py`, `scripts/build_twb.py` | Rebuild the data and the workbook (`python3 scripts/build_data.py && python3 scripts/build_twb.py`) |
 
-> **Before you submit:** replace `[Your Name] & [Partner Name]` in the dashboard footer (double-click the footer text box).
+> **Individual project:** the dashboard now uses solo attribution and contains no partner placeholder. See `PRESENTATION.md` for a three-minute script and `QA.md` for validation and submission status.
 
 ---
 
@@ -75,21 +76,32 @@ Fixed size **1920 × 1080**.
 | Row 2 | `Arrival Time Trend` | Average arrival minute per year, colored rain/dry |
 | Footer | text | Sources, method notes, names |
 
-**Interactivity:** the 3 parameter controls; a **dashboard highlight action on Year** (click a year anywhere to highlight it everywhere); custom tooltips on every chart.
+**Interactivity:** the 3 parameter controls; a **dashboard highlight action on Year** (click a year to highlight it across the year-based charts; click blank space to clear); custom tooltips on every chart.
 
 ---
+
+## Rebuilding the workbook locally
+
+The workbook generator needs `openpyxl`. From `halloween/`, use an isolated environment if your system Python does not have it:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install openpyxl==3.1.5
+python3 scripts/build_twb.py
+```
+
+Rebuilding the enriched data with `scripts/build_data.py` additionally needs `pandas`; it is not required to regenerate the Tableau workbook from the verified existing Excel file. The data files were not rebuilt during this repair.
 
 ## Opening the workbook
 
 1. Double-click `tableau/Halloween Weather and Trick-or-Treaters.twbx` (Tableau Desktop or Tableau Public 2020.1 or later).
 2. If Tableau asks where the data is, point it at `Halloween_Enriched.xlsx`.
 3. Go to the **Halloween Dashboard** tab and check it against the preview link above.
-4. Recommended polish (each takes seconds and was not set automatically):
-   * **Weather Explorer** and **Arrival Time Trend**: Analytics pane → drag **Trend Line** → Linear.
-   * **Year by Year**: Analytics pane → drag **Average Line** → Table.
-   * **Weather Explorer**: Analytics pane → **Trend Line**, then hover the line to see R².
+4. Both overall linear trend lines and the yearly average line are now generated automatically. No Analytics-pane finishing step is required.
+5. The workbook was opened and rendered in **Tableau Desktop Free Edition 2026.3 on macOS**. Older releases have not been tested. The fixed dashboard size remains **1920 × 1080**; a smaller laptop display may require scrolling even in presentation mode.
 
-> I generated the `.twbx` file directly as Tableau XML, because Tableau can't run in the environment I worked in. I checked that it is well-formed and that every field reference resolves, but I could not open it in Tableau. If it shows an error or a sheet looks wrong, rebuild that piece with the recipe below. The whole workbook takes about 45 minutes to rebuild from scratch.
+The generator fixes three loading problems: worksheet windows require card definitions; Parameters belong in dependency declarations, not the primary datasource list (otherwise Tableau silently empties the shelves); and saved categorical palettes require datasource-level column instances. Modern object-model metadata and parameter dependencies are included. All changes are in `scripts/build_twb.py`; regeneration preserves the purple heatmap, custom palettes, overall regressions, average line, key-year labels, units, directions, and footer.
 
 ---
 
@@ -119,7 +131,7 @@ Rain vs Dry         (SUM(IF [Rain or Dry]="Rain" THEN [Count] END) / COUNTD(IF [
 Avg Arrival (min after 6 pm)   SUM([Count] * [Arrival Minute]) / SUM([Count])
 Avg Arrival Time    STR(6 + INT(INT(ROUND([Avg Arrival (min after 6 pm)],0)) / 60)) + ":" +
                     RIGHT("0" + STR(INT(ROUND([Avg Arrival (min after 6 pm)],0)) % 60), 2) + " pm"
-Color Group         CASE [Color years by] WHEN "Rain or dry" THEN [Rain or Dry]
+Year grouping       CASE [Color years by] WHEN "Rain or dry" THEN [Rain or Dry]
                     WHEN "Temperature" THEN [Temperature Band] ELSE [Night Type] END
 Selected Weather    CASE [Weather measure (x-axis)]
                     WHEN "Wind gust (mph)"    THEN AVG([Night Max Gust Mph])
@@ -138,18 +150,18 @@ Put **Keep Year? = True** on the Filters shelf of every sheet. Then right-click 
 | KPI Peak Hour | – | – | Text: `Peak Hour Share` (percent, 0 dp) |
 | KPI Rain Effect | – | – | Text: `Rain vs Dry` (percent, 0 dp) |
 | KPI Arrival Time | – | – | Text: `Avg Arrival Time` |
-| Year by Year | Year | SUM(Count) | Bar · Color: `Color Group` · Label: SUM(Count) · Tooltip: ATTR(Day of Week), ATTR(Conditions), AVG(Night Feels Like F), AVG(Night Precip In), AVG(Night Max Gust Mph), ATTR(Note) · Analytics: Average line |
+| Year by Year | Year | SUM(Count) | Bar · Color: `Year grouping` · Label: SUM(Count) · Tooltip: ATTR(Day of Week), ATTR(Conditions), AVG(Night Feels Like F), AVG(Night Precip In), AVG(Night Max Gust Mph), ATTR(Note) · Analytics: Average line |
 | Arrival Curve | Interval Order | Kids per Night | Bar · Color: Light · Label: Share of All Kids |
-| Rush Hour Heatmap | Interval Order | Year | Square · Color: SUM(Count) (Orange sequential) · Label: SUM(Count) |
-| Weather Explorer | Selected Weather | SUM(Count) | Circle · Detail: Year · Label: Year · Color: Rain or Dry · Analytics: Trend line |
-| Arrival Time Trend | Year | Avg Arrival (min after 6 pm) | Circle · Color: Rain or Dry · Analytics: Trend line |
+| Rush Hour Heatmap | Interval Order | Year | Square · Color: SUM(Count) (Purple sequential) · Label: SUM(Count) |
+| Weather Explorer | Selected Weather | SUM(Count) | Circle · Detail: Year · Label: key years (2011, 2013, 2017, 2019) · Color: Rain or Dry · Analytics: overall linear trend line (disable separate models by color) |
+| Arrival Time Trend | Year (continuous; also discrete Year on Detail) | Avg Arrival (min after 6 pm) | Circle · Color: Rain or Dry · Analytics: Trend line |
 
 KPI text: make the number about 30 pt bold, with a 10 pt caption underneath, e.g. "trick-or-treaters on an average Halloween".
 Colors: Rain `#2F7FC1`, Dry `#C27A28`; Daylight `#BBA8E0`, Twilight `#8566BE`, Dark `#4A2F7A`; Chilly `#3F86C8`, Mild `#B98512`, Warm `#C8424F`; School night `#5B3F8C`, Weekend night `#E0570B`. These pass color-blind separation checks.
 
 ### 5. Dashboard
 New Dashboard → **Size: Fixed, 1920 × 1080**. Lay it out as in the table above: dark header text box (`#2B1D3F`) with title and how-to, a KPI row with the three parameter controls on the right, two charts in row 1, three in row 2, and a sources footer.
-**Dashboard → Actions → Add Action → Highlight**: source = all sheets, run on **Select**, target = this dashboard, **Selected fields: Year**.
+**Dashboard → Actions → Add Action → Highlight**: source = year-based sheets, run on **Select**, target = this dashboard, **Selected fields: Year**. Clear by clicking blank space. The aggregated Arrival Curve and KPI sheets do not contain Year marks.
 
 ---
 
@@ -161,11 +173,13 @@ New Dashboard → **Size: Fixed, 1920 × 1080**. Lay it out as in the table abov
 5. **Finding 3:** storms push arrivals earlier, and kids are arriving earlier every year. Show the arrival-time trend and click 2013.
 6. **So what:** buy candy for about 650. Cut back about 150 if rain or wind is forecast. Be on the porch by 6:15.
 
-## Email to the instructor (template)
-> Subject: Halloween Assignment – Team
+## Email to the instructor (optional template; not sent)
+
+The student elected to handle any instructor email personally. The brief lists this requirement; check whether an individual submission needs the same notification.
+> Subject: Halloween Assignment – Individual Project
 >
 > Hi Professor,
-> Our team for the Halloween assignment is [Your Name] and [Partner Name]. Our story looks at how weather (rain, wind and temperature) and darkness after sunset affect the number and timing of trick-or-treaters. We appended hourly historical weather from the Open-Meteo / ERA5 archive.
+> I am completing the Halloween assignment individually as [Your Name]. Our story looks at how weather (rain, wind and temperature) and darkness after sunset affect the number and timing of trick-or-treaters. We appended hourly historical weather from the Open-Meteo / ERA5 archive.
 >
 > Thanks,
 > [Your Name]

@@ -32,8 +32,8 @@ COLOR_MAPS = {
     "[none:Light:nk]": {"Daylight": "#BBA8E0", "Twilight": "#8566BE", "Dark": "#4A2F7A"},
     "[none:Calculation_ColorBy:nk]": {
         "Rain": "#2F7FC1", "Dry": "#C27A28",
-        "Chilly (< 50°F)": "#3F86C8", "Mild (50–59°F)": "#B98512", "Warm (60°F +)": "#C8424F",
-        "School night (Sun–Thu)": "#5B3F8C", "Weekend night (Fri/Sat)": "#E0570B",
+        "Chilly (< 50°F)": "#2A9D8F", "Mild (50–59°F)": "#A8A29A", "Warm (60°F +)": "#C8424F",
+        "School night (Sun–Thu)": "#5B3F8C", "Weekend night (Fri/Sat)": "#2A9D8F",
     },
 }
 
@@ -96,9 +96,9 @@ DIMENSION_NUMBERS = {"Year", "Interval Order"}
 INTERVAL_ALIASES = {1: "Before 6:00", 2: "6:00–6:30", 3: "6:30–7:00", 4: "7:00–7:30", 5: "7:30–8:00", 6: "8:00–8:15"}
 
 PARAMS = {
-    "Parameter 1": dict(caption="2020 (COVID year)", value="Exclude 2020", members=["Exclude 2020", "Include 2020"]),
-    "Parameter 2": dict(caption="Color years by", value="Rain or dry", members=["Rain or dry", "Temperature", "School vs weekend night"]),
-    "Parameter 3": dict(caption="Weather measure (x-axis)", value="Wind gust (mph)",
+    "Parameter 1": dict(caption="COVID year", value="Exclude 2020", members=["Exclude 2020", "Include 2020"]),
+    "Parameter 2": dict(caption="Color bars by", value="Rain or dry", members=["Rain or dry", "Temperature", "School vs weekend night"]),
+    "Parameter 3": dict(caption="Weather on scatter plot", value="Wind gust (mph)",
                         members=["Wind gust (mph)", "Wind speed (mph)", "Rain 6-8 pm (in)", "Feels-like temp (F)", "Cloud cover (%)"]),
 }
 
@@ -122,7 +122,7 @@ CALCS = {
                               'IF [Year] = 2011 OR [Year] = 2013 OR [Year] = 2017 OR [Year] = 2019 THEN STR([Year]) ELSE "" END'),
     "Calculation_KeepYear": ("Keep Year?", "boolean", "dimension", "nominal",
                              '[Parameters].[Parameter 1] = "Include 2020" OR [Year] <> 2020'),
-    "Calculation_KidsPerNight": ("Kids per Night", "real", "measure", "quantitative",
+    "Calculation_KidsPerNight": ("Average kids", "real", "measure", "quantitative",
                                  "SUM([Count]) / COUNTD([Year])"),
     "Calculation_Share": ("Share of All Kids", "real", "measure", "quantitative",
                           "SUM([Count]) / MIN({ FIXED [Calculation_KeepYear] : SUM([Count]) })"),
@@ -136,7 +136,7 @@ CALCS = {
     "Calculation_ArrTime": ("Avg Arrival Time", "string", "measure", "nominal",
                             'STR(6 + INT(INT(ROUND([Calculation_ArrMin], 0)) / 60)) + ":" + '
                             'RIGHT("0" + STR(INT(ROUND([Calculation_ArrMin], 0)) % 60), 2) + " pm"'),
-    "Calculation_ColorBy": ("Year grouping", "string", "dimension", "nominal",
+    "Calculation_ColorBy": ("Bar color", "string", "dimension", "nominal",
                             'CASE [Parameters].[Parameter 2]\nWHEN "Rain or dry" THEN [Rain or Dry]\n'
                             'WHEN "Temperature" THEN [Temperature Band]\nELSE [Night Type]\nEND'),
     "Calculation_Weather": ("Selected Weather", "real", "measure", "quantitative",
@@ -154,7 +154,7 @@ CALC_DEPS = {"Calculation_ArrTime": ["Calculation_ArrMin"], "Calculation_Share":
 
 
 # Friendly display names: these show up as axis, header and legend titles.
-BASE_CAPTIONS = {"Count": "Kids", "Interval Order": "Arrival window"}
+BASE_CAPTIONS = {"Count": "Kids", "Interval Order": "Time slot"}
 
 
 def col_def(name, dtype, cols_by_name, with_calc=True):
@@ -308,7 +308,7 @@ class Sheet:
             fmt += "<style-rule element='cell'><format attr='text-align' value='center' /><format attr='vertical-align' value='center' /></style-rule>"
         if self.name == "Arrival Time Trend":
             axis = DSREF + ".[usr:Calculation_ArrMin:qk]"
-            fmt += f"<style-rule element='axis'><encoding attr='space' class='0' field={a(axis)} field-type='quantitative' min='45' max='75' range-type='fixed' scope='rows' type='space' /><format attr='title' class='0' field={a(axis)} scope='rows' value='Estimated arrival (min after 6 pm)' /></style-rule>"
+            fmt += f"<style-rule element='axis'><encoding attr='space' class='0' field={a(axis)} field-type='quantitative' min='45' max='75' range-type='fixed' scope='rows' type='space' /><format attr='title' class='0' field={a(axis)} scope='rows' value='Minutes after 6 pm' /></style-rule>"
         if self.name == "Weather Explorer":
             axis = DSREF + ".[usr:Calculation_Weather:qk]"
             # The datagraph below binds this cached title to Parameter 3.
@@ -350,21 +350,21 @@ def kpi(name, field, deriv, caption, fmt=None, color=ORANGE):
 
 
 SHEETS = [
-    kpi("KPI Kids per Night", "Calculation_KidsPerNight", "User", "kids per Halloween, on average", "n#,##0"),
-    kpi("KPI Peak Hour", "Calculation_PeakShare", "User", "arrive between 6:30 and 7:30 pm", "p0%", PURPLE),
-    kpi("KPI Rain Effect", "Calculation_RainEffect", "User", "average turnout: rain vs. dry nights", "p0%", RAIN),
-    kpi("KPI Arrival Time", "Calculation_ArrTime", "User", "estimated average arrival", None, ORANGE),
+    kpi("KPI Kids per Night", "Calculation_KidsPerNight", "User", "kids on an average Halloween", "n#,##0"),
+    kpi("KPI Peak Hour", "Calculation_PeakShare", "User", "come between 6:30 and 7:30 pm", "p0%", PURPLE),
+    kpi("KPI Rain Effect", "Calculation_RainEffect", "User", "kids on rainy nights vs. dry nights", "p0%", RAIN),
+    kpi("KPI Arrival Time", "Calculation_ArrTime", "User", "typical arrival time (estimated)", None, ORANGE),
 
     Sheet("Year by Year",
-          title("Every Halloween, 2008–2025", "Kids per night · click a bar to highlight its year"),
+          title("Every Halloween, 2008–2025", "Total kids each year. Click a bar to highlight that year."),
           "Bar", rows=[("Count", "Sum")], cols=[("Year", "None")],
           enc={"color": [("Calculation_ColorBy", "None")], "text": [("Count", "Sum")],
                "tooltip": [("Day of Week", "Attribute"), ("Conditions", "Attribute"), ("Night Feels Like F", "Avg"),
                            ("Night Precip In", "Avg"), ("Night Max Gust Mph", "Avg"), ("Note", "Attribute")]},
           label_show=True,
-          tooltip=(field_run("[none:Year:ok]", size=12, bold=True, color=ORANGE, font=T) + run("  ·  ", color=MUTED)
+          tooltip=(field_run("[none:Year:ok]", size=12, bold=True, color=ORANGE, font=T) + run(", ", color=MUTED)
                    + field_run("[attr:Day of Week:nk]", color=INK, font=B) + NL
-                   + tip_line("Trick-or-treaters: ", "[sum:Count:qk]")
+                   + tip_line("Kids: ", "[sum:Count:qk]")
                    + tip_line("Conditions 6–8 pm: ", "[attr:Conditions:nk]")
                    + tip_line("Feels-like temp (°F): ", "[avg:Night Feels Like F:qk]")
                    + tip_line("Rain 6–8 pm (in): ", "[avg:Night Precip In:qk]")
@@ -374,25 +374,25 @@ SHEETS = [
                    ("Night Max Gust Mph", "Avg"): "n#,##0"}),
 
     Sheet("Arrival Curve",
-          title("When they come: the hour after sunset",
-                "Kids per window · sunset ≈ 6:37 pm EDT · final window is 15 min"),
+          title("Most kids come in the hour after sunset",
+                "Average kids per time slot. Sunset is about 6:37 pm. The last slot is only 15 minutes."),
           "Bar", rows=[("Calculation_KidsPerNight", "User")], cols=[("Interval Order", "None")],
           enc={"color": [("Light", "None")], "text": [("Calculation_Share", "User")],
                "tooltip": [("Calculation_KidsPerNight", "User"), ("Calculation_WindowLength", "User"), ("Calculation_RateLabel", "User")]},
           label_show=True,
-          tooltip=(field_run("[none:Interval Order:ok]", size=12, bold=True, color=ORANGE, font=T) + run("  ·  ") + field_run("[none:Light:nk]") + NL
-                   + tip_line("Average kids per night: ", "[usr:Calculation_KidsPerNight:qk]")
+          tooltip=(field_run("[none:Interval Order:ok]", size=12, bold=True, color=ORANGE, font=T) + run(", ") + field_run("[none:Light:nk]") + NL
+                   + tip_line("Average kids: ", "[usr:Calculation_KidsPerNight:qk]")
                    + tip_line("Share of all kids: ", "[usr:Calculation_Share:qk]")
                    + tip_line("Window length: ", "[usr:Calculation_WindowLength:nk]")
-                   + tip_line("Average kids per 15 min: ", "[usr:Calculation_RateLabel:nk]")),
+                   + tip_line("Kids per 15 minutes: ", "[usr:Calculation_RateLabel:nk]")),
           formats={("Calculation_KidsPerNight", "User"): "n#,##0", ("Calculation_Share", "User"): "p0%"}),
 
     Sheet("Rush Hour Heatmap",
-          title("The trick-or-treat rush", "Kids per window · final window is 15 min"),
+          title("Kids by year and time", "Darker means more kids. The last slot is only 15 minutes."),
           "Square", rows=[("Year", "None")], cols=[("Interval Order", "None")],
           enc={"color": [("Count", "Sum")], "text": [("Count", "Sum")], "tooltip": [("Rain or Dry", "Attribute"), ("Interval Temp F", "Avg")]},
           label_show=True,
-          tooltip=(field_run("[none:Year:ok]", bold=True, color=ORANGE, font=T) + run(" · ") + field_run("[none:Interval Order:ok]", bold=True, font=T) + NL
+          tooltip=(field_run("[none:Year:ok]", bold=True, color=ORANGE, font=T) + run(", ") + field_run("[none:Interval Order:ok]", bold=True, font=T) + NL
                    + tip_line("Kids: ", "[sum:Count:qk]")
                    + tip_line("Temperature (°F): ", "[avg:Interval Temp F:qk]")
                    + tip_line("Night was: ", "[attr:Rain or Dry:nk]")),
@@ -400,14 +400,14 @@ SHEETS = [
           extra_style=f"<style-rule element='mark'><encoding attr='color' field={a(DSREF + '.[sum:Count:qk]')} palette='purple_10_0' type='interpolated' /></style-rule>"),
 
     Sheet("Weather Explorer",
-          title("Does the weather matter?", "One dot per Halloween · blue = rain, amber = dry · line = overall fit"),
+          title("Does the weather matter?", "Each dot is one Halloween. Blue had rain, orange stayed dry."),
           "Circle", rows=[("Count", "Sum")], cols=[("Calculation_Weather", "User")],
           enc={"color": [("Rain or Dry", "None")], "lod": [("Year", "None")], "text": [("Calculation_YearLabel", "None")],
                "tooltip": [("Conditions", "Attribute"), ("Night Feels Like F", "Avg"), ("Night Max Gust Mph", "Avg")]},
           label_show=True, mark_size="1.0",
           tooltip=(field_run("[none:Year:ok]", size=12, bold=True, color=ORANGE, font=T) + NL
-                   + tip_line("Trick-or-treaters: ", "[sum:Count:qk]")
-                   + tip_line("Selected weather value: ", "[usr:Calculation_Weather:qk]")
+                   + tip_line("Kids: ", "[sum:Count:qk]")
+                   + tip_line("Weather value: ", "[usr:Calculation_Weather:qk]")
                    + tip_line("Conditions: ", "[attr:Conditions:nk]")
                    + tip_line("Feels-like (°F): ", "[avg:Night Feels Like F:qk]")
                    + tip_line("Peak gust (mph): ", "[avg:Night Max Gust Mph:qk]")),
@@ -415,7 +415,7 @@ SHEETS = [
                    ("Night Max Gust Mph", "Avg"): "n#,##0"}),
 
     Sheet("Arrival Time Trend",
-          title("Are arrivals shifting earlier?", "Estimated from window midpoints · 60 = 7 pm · lower = earlier"),
+          title("Are kids coming earlier?", "Estimated average arrival, in minutes after 6 pm (60 = 7:00 pm)"),
           "Circle", rows=[("Calculation_ArrMin", "User")], cols=[("Year", "Continuous")],
           enc={"lod": [("Year", "None")], "color": [("Rain or Dry", "None")], "tooltip": [("Calculation_ArrTime", "User"), ("Conditions", "Attribute")]},
           mark_size="1.0",
@@ -432,20 +432,18 @@ rain_kpi.enc["text"] += [(f, "User") for f in rain_fields]  # label runs can onl
 rain_kpi.formats.update({(f, "User"): "n#,##0" for f in rain_fields})
 comparison = (run("Rain ", size=9, color=INK, font=B)
               + field_run(inst("Calculation_RainAvg", "User")[0], size=9, color=INK, font=B)
-              + run(" (n=", size=9, color=INK, font=B)
+              + run(" (", size=9, color=INK, font=B)
               + field_run(inst("Calculation_RainN", "User")[0], size=9, color=INK, font=B)
-              + run(") · Dry ", size=9, color=INK, font=B)
+              + run(" nights)   Dry ", size=9, color=INK, font=B)
               + field_run(inst("Calculation_DryAvg", "User")[0], size=9, color=INK, font=B)
-              + run(" (n=", size=9, color=INK, font=B)
+              + run(" (", size=9, color=INK, font=B)
               + field_run(inst("Calculation_DryN", "User")[0], size=9, color=INK, font=B)
-              + run(")", size=9, color=INK, font=B))
+              + run(" nights)", size=9, color=INK, font=B))
 rain_kpi.label += NL + comparison
-rain_kpi.tooltip = (run("Average kids per Halloween; n = number of nights.", font=B) + NL + comparison)
+rain_kpi.tooltip = (run("Average kids on rainy vs. dry nights.", font=B) + NL + comparison)
 
 arrival_kpi = SHEETS[3]
-arrival_kpi.label = (run("≈ ", size=30, bold=True, color=ORANGE, font=T) + arrival_kpi.label
-                     + NL + run("kid-weighted · interval midpoints", size=9, color=MUTED, font=B))
-arrival_kpi.tooltip = run("Estimated from interval midpoints, not individual arrival timestamps. Early arrivals use a representative 5:45 pm midpoint.", font=B)
+arrival_kpi.tooltip = run("An estimate. Each kid is counted at the middle of their time slot. Kids before 6:00 are counted at 5:45.", font=B)
 
 SHEETS[5].title_runs += (NL + run("■", size=9, color="#BBA8E0", font=B) + run(" Daylight    ", size=9, color=INK, font=B)
                          + run("■", size=9, color="#8566BE", font=B) + run(" Twilight    ", size=9, color=INK, font=B)
@@ -498,14 +496,14 @@ def dashboard_xml():
     # header band
     z.append(text_zone(0, 0, 1280, 112,
                        run("WHO SHOWS UP ON HALLOWEEN?", size=26, bold=True, color="#FFFFFF", font=T) + NL
-                       + run("How weather and darkness shape the trick-or-treat rush — 2008–2025 · One porch in Cincinnati, OH 45207",
+                       + run("How weather and darkness affect trick-or-treaters at one house in Cincinnati, 2008 to 2025",
                              size=12, color="#F6D7B0", font=B),
                        bg=NIGHT, margin=14))
     z.append(text_zone(1290, 10, 620, 94,
                        run("HOW TO USE", size=9, bold=True, color=GOLD, font=T) + NL
-                       + run("• Click a year (bar, dot or heat-map row) to highlight it across year-based charts. Click blank space to clear.", size=9, color="#FFFFFF", font=B) + NL
-                       + run("• Use the three controls below to add 2020 back in, recolour the years, or swap the weather on the x-axis.", size=9, color="#FFFFFF", font=B) + NL
-                       + run("• Hover over marks for values and weather details.", size=9, color="#FFFFFF", font=B),
+                       + run("• Click a year to highlight it. Click empty space to clear it.", size=9, color="#FFFFFF", font=B) + NL
+                       + run("• Use the controls below to add 2020 back, recolor the bars, or change the weather on the scatter plot.", size=9, color="#FFFFFF", font=B) + NL
+                       + run("• Hover over anything for details.", size=9, color="#FFFFFF", font=B),
                        bg=NIGHT, margin=6))
     # KPI strip
     xs = [16, 349, 682, 1015]
@@ -517,16 +515,16 @@ def dashboard_xml():
     z.append(param_zone("Parameter 2", 1537, 146, 180, 58))
     z.append(param_zone("Parameter 3", 1724, 146, 180, 58))
     z.append(text_zone(1350, 204, 554, 30,
-                       run("2020 is excluded by default — the COVID candy-chute year is an outlier, not a weather effect.", size=8, italic=True, color=MUTED, font=B), margin=4))
+                       run("2020 is left out by default. COVID changed how people trick-or-treated that year.", size=8, italic=True, color=MUTED, font=B), margin=4))
     # row 2
     z.append(sheet_zone("Year by Year", 16, 242, 900, 380))
     z.append(legend_zone("Year by Year", "[none:Calculation_ColorBy:nk]", 922, 252, 196, 150))
     z.append(text_zone(922, 338, 196, 274,
-                       run("WHAT STANDS OUT", size=9, bold=True, color=ORANGE, font=T) + NL
-                       + run("Rain and wind align with smaller crowds.", size=10, color=INK, font=B) + NL + NL
-                       + run("2013: 391 kids, rain + 47 mph gusts.", size=10, color=INK, font=B) + NL
-                       + run("2017: 776 kids, 36°F feels-like.", size=10, color=INK, font=B) + NL + NL
-                       + run("Weekend nights: 595 kids vs. 632 on school nights (5 vs. 12 years; excludes 2020).", size=10, color=INK, font=B),
+                       run("KEY POINTS", size=9, bold=True, color=ORANGE, font=T) + NL
+                       + run("Rain and wind mean fewer kids. Cold doesn't seem to matter.", size=10, color=INK, font=B) + NL + NL
+                       + run("2013: rain and 47 mph gusts. Only 391 kids.", size=10, color=INK, font=B) + NL
+                       + run("2017: felt like 36°F. Still 776 kids.", size=10, color=INK, font=B) + NL + NL
+                       + run("Weekends weren't busier: 595 kids vs. 632 on school nights.", size=10, color=INK, font=B),
                        bg="#FFFFFF", margin=8))
     z.append(sheet_zone("Arrival Curve", 1126, 242, 778, 380))
     # row 3
@@ -538,10 +536,9 @@ def dashboard_xml():
     # footer
     z.append(text_zone(0, 994, 1920, 86,
                        run("SOURCES  ", size=9, bold=True, color=INK, font=T)
-                       + run("Counts: Jeffrey Shaffer, HalloweenTableau2025.xlsx. Weather: Open-Meteo Historical Weather API / ERA5 (ECMWF/Copernicus), open-meteo.com/en/docs/historical-weather-api. Sun position: NOAA Global Monitoring Laboratory, General Solar Position Calculations.", size=9, color=MUTED, font=B) + NL
-                       + run("METHOD  ", size=9, bold=True, color=INK, font=T)
-                       + run("Weather timestamps corrected to EDT; rain = ≥ 0.01 in from 6–8 pm. Counts cover the window ending at the logged time; final window = 15 min. Arrival times are estimated from window midpoints. Repeated night-level fields use AVG/ATTR. Small sample: associations, not causation. ", size=9, color=MUTED, font=B)
-                       + run("Individual class project", size=9, bold=True, color=PURPLE, font=T),
+                       + run("Trick-or-treat counts: Jeffrey Shaffer (course data). Weather: Open-Meteo Historical Weather API (open-meteo.com), ERA5 data. Sunset and darkness: NOAA solar calculator.", size=9, color=MUTED, font=B) + NL
+                       + run("NOTES  ", size=9, bold=True, color=INK, font=T)
+                       + run("Weather times were converted to Eastern Daylight Time. A night counts as rainy if at least 0.01 in of rain fell between 6 and 8 pm. Arrival times are estimates. With only 17 years of data, these are patterns, not proof.", size=9, color=MUTED, font=B),
                        bg="#F1EBE2", margin=6))
     inner = "".join(z)
     return (f"<dashboards><dashboard name={a(DASH)}><style><style-rule element='table'><format attr='background-color' value='{BG}' /></style-rule></style>"

@@ -17,7 +17,7 @@ Original HTML concept preview (not Tableau output; final workbook uses a purple 
 | `preview/index.html` | Browser version of the dashboard (the link above) |
 | `scripts/build_data.py`, `scripts/build_twb.py` | Rebuild the data and the workbook (`python3 scripts/build_data.py && python3 scripts/build_twb.py`) |
 
-> **Individual project:** the dashboard now uses solo attribution and contains no partner placeholder. See `PRESENTATION.md` for a three-minute script and `QA.md` for validation and submission status.
+> **Individual project:** the dashboard footer reads "Created by Benjamin Hodges". See `PRESENTATION.md` for a three-minute script and `QA.md` for validation and submission status.
 
 ---
 

@@ -538,7 +538,8 @@ def dashboard_xml():
                        run("SOURCES  ", size=9, bold=True, color=INK, font=T)
                        + run("Trick-or-treat counts: Jeffrey Shaffer (course data). Weather: Open-Meteo Historical Weather API (open-meteo.com), ERA5 data. Sunset and darkness: NOAA solar calculator.", size=9, color=MUTED, font=B) + NL
                        + run("NOTES  ", size=9, bold=True, color=INK, font=T)
-                       + run("Weather times were converted to Eastern Daylight Time. A night counts as rainy if at least 0.01 in of rain fell between 6 and 8 pm. Arrival times are estimates. With only 17 years of data, these are patterns, not proof.", size=9, color=MUTED, font=B),
+                       + run("Weather times were converted to Eastern Daylight Time. A night counts as rainy if at least 0.01 in of rain fell between 6 and 8 pm. Arrival times are estimates. With only 17 years of data, these are patterns, not proof.   ", size=9, color=MUTED, font=B)
+                       + run("Created by Benjamin Hodges", size=9, bold=True, color=PURPLE, font=T),
                        bg="#F1EBE2", margin=6))
     inner = "".join(z)
     return (f"<dashboards><dashboard name={a(DASH)}><style><style-rule element='table'><format attr='background-color' value='{BG}' /></style-rule></style>"

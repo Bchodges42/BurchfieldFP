@@ -53,3 +53,15 @@ Package checks passed for ZIP integrity, nine populated worksheet specifications
 | Optional Word write-up | Not created; the actual Tableau PNG is available if a write-up is later requested. |
 
 The original HTML preview is a concept mockup and may differ from the final workbook. Older Tableau releases were not tested. On a laptop smaller than 1920 × 1080 logical pixels, Tableau may require scrolling; the dashboard's required fixed dimensions remain unchanged.
+
+## Clarity pass (November 15, 2026, evening)
+
+Re-verified in Tableau Desktop 2026.3 after a rubric review:
+
+- **Fixed a blank Arrival Curve.** The "Window length" tooltip field was a row-level string dimension, which Tableau 2026.3 marked invalid, blanking the whole chart. It is now an aggregate string, like "Kids per 15 min label".
+- The rain KPI now shows the comparison behind −22%: Rain 518 (n=5) · Dry 664 (n=12). These fields moved from Tooltip to the Text shelf so the label can read them.
+- The arrival KPI reads "≈ 7:02 pm, estimated average arrival · kid-weighted · interval midpoints"; the trend chart's subtitle and axis say "estimated".
+- The Weather Explorer x-axis title follows the Weather measure control (Tableau datagraph binding), e.g. "Wind gust (mph)".
+- Display captions: Count → "Kids" (axes, legend), Interval Order → "Arrival window" (headers).
+- The heatmap legend sits in the heatmap's own header; footer and note text enlarged to 9–10 pt.
+- Native export reviewed: `tableau/Halloween Dashboard.png`.

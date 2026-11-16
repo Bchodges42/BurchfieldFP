@@ -3,6 +3,7 @@
 Run from the halloween/ folder:  python3 scripts/build_twb.py
 """
 import zipfile
+import uuid
 from pathlib import Path
 from xml.sax.saxutils import escape, quoteattr
 
@@ -16,6 +17,10 @@ DASH = "Halloween Dashboard"
 DS = "federated.0hw2026trickortreatweather01"
 XC = "excel-direct.0hw2026halloweenenriched01"
 DSREF = f"[{DS}]"
+
+
+def sheet_id(name):
+    return "{" + str(uuid.uuid5(uuid.NAMESPACE_URL, "BurchfieldFP/halloween/" + name)).upper() + "}"
 
 # ------------------------------------------------------------------ palette
 ORANGE, PURPLE, GOLD, NIGHT, INK, MUTED, RAIN, DRY = (
@@ -99,8 +104,18 @@ PARAMS = {
 
 # name -> (caption, datatype, role, type, formula)
 CALCS = {
-    "Calculation_WindowLength": ("Window length", "string", "dimension", "nominal",
-                                  'IF ISNULL([Interval Minutes]) THEN "Open-ended early arrivals" ELSE STR([Interval Minutes]) + " min" END'),
+    "Calculation_RainAvg": ("Rain night average", "real", "measure", "quantitative",
+                             'SUM(IF [Rain or Dry] = "Rain" THEN [Count] END) / COUNTD(IF [Rain or Dry] = "Rain" THEN [Year] END)'),
+    "Calculation_DryAvg": ("Dry night average", "real", "measure", "quantitative",
+                            'SUM(IF [Rain or Dry] = "Dry" THEN [Count] END) / COUNTD(IF [Rain or Dry] = "Dry" THEN [Year] END)'),
+    "Calculation_RainN": ("Rain nights", "integer", "measure", "quantitative",
+                           'COUNTD(IF [Rain or Dry] = "Rain" THEN [Year] END)'),
+    "Calculation_DryN": ("Dry nights", "integer", "measure", "quantitative",
+                          'COUNTD(IF [Rain or Dry] = "Dry" THEN [Year] END)'),
+    # Aggregate string (like RateLabel): a row-level string dimension on Tooltip
+    # turned the pill invalid in Tableau 2026.3 and blanked the whole Arrival Curve.
+    "Calculation_WindowLength": ("Window length", "string", "measure", "nominal",
+                                  'IF ISNULL(MIN([Interval Minutes])) THEN "Open-ended early arrivals" ELSE STR(MIN([Interval Minutes])) + " min" END'),
     "Calculation_RateLabel": ("Kids per 15 min label", "string", "measure", "nominal",
                                'IF ISNULL(AVG([Kids per 15 Min])) THEN "Not applicable (open-ended window)" ELSE STR(ROUND(AVG([Kids per 15 Min]), 1)) END'),
     "Calculation_YearLabel": ("Key year label", "string", "dimension", "nominal",
@@ -138,6 +153,10 @@ CALC_PARAMS = {"Calculation_KeepYear": ["Parameter 1"], "Calculation_ColorBy": [
 CALC_DEPS = {"Calculation_ArrTime": ["Calculation_ArrMin"], "Calculation_Share": ["Calculation_KeepYear"]}
 
 
+# Friendly display names: these show up as axis, header and legend titles.
+BASE_CAPTIONS = {"Count": "Kids", "Interval Order": "Arrival window"}
+
+
 def col_def(name, dtype, cols_by_name, with_calc=True):
     """<column> element for a base or calculated field."""
     if name in CALCS:
@@ -145,13 +164,14 @@ def col_def(name, dtype, cols_by_name, with_calc=True):
         body = f"<calculation class='tableau' formula={a(f)} />" if with_calc else ""
         return f"<column caption={a(cap)} datatype='{dt}' name={a('[' + name + ']')} role='{role}' type='{typ}'>{body}</column>"
     dt = cols_by_name[name]
+    cap = f" caption={a(BASE_CAPTIONS[name])}" if name in BASE_CAPTIONS else ""
     if name in DIMENSION_NUMBERS:
         inner = ""
         if name == "Interval Order":
             inner = "<aliases>" + "".join(f"<alias key='{k}' value={a(v)} />" for k, v in INTERVAL_ALIASES.items()) + "</aliases>"
-        return f"<column datatype='{dt}' name={a('[' + name + ']')} role='dimension' type='ordinal'>{inner}</column>"
+        return f"<column{cap} datatype='{dt}' name={a('[' + name + ']')} role='dimension' type='ordinal'>{inner}</column>"
     if dt in ("integer", "real"):
-        return f"<column datatype='{dt}' name={a('[' + name + ']')} role='measure' type='quantitative' />"
+        return f"<column{cap} datatype='{dt}' name={a('[' + name + ']')} role='measure' type='quantitative' />"
     return f"<column datatype='{dt}' name={a('[' + name + ']')} role='dimension' type='nominal' />"
 
 
@@ -276,7 +296,7 @@ class Sheet:
         if rules:
             pane_style = "<style><style-rule element='mark'>" + "".join(rules) + "</style-rule>"
             if self.name == "Rush Hour Heatmap":
-                pane_style += "<style-rule element='datalabel'><format attr='color-mode' value='auto' /></style-rule>"
+                pane_style += "<style-rule element='datalabel'><format attr='color-mode' value='auto' /><format attr='font-size' value='10' /></style-rule>"
             pane_style += "</style>"
 
         fmt = ""
@@ -288,10 +308,11 @@ class Sheet:
             fmt += "<style-rule element='cell'><format attr='text-align' value='center' /><format attr='vertical-align' value='center' /></style-rule>"
         if self.name == "Arrival Time Trend":
             axis = DSREF + ".[usr:Calculation_ArrMin:qk]"
-            fmt += f"<style-rule element='axis'><encoding attr='space' class='0' field={a(axis)} field-type='quantitative' min='45' max='75' range-type='fixed' scope='rows' type='space' /><format attr='title' class='0' field={a(axis)} scope='rows' value='Mean arrival (min after 6 pm)' /></style-rule>"
+            fmt += f"<style-rule element='axis'><encoding attr='space' class='0' field={a(axis)} field-type='quantitative' min='45' max='75' range-type='fixed' scope='rows' type='space' /><format attr='title' class='0' field={a(axis)} scope='rows' value='Estimated arrival (min after 6 pm)' /></style-rule>"
         if self.name == "Weather Explorer":
             axis = DSREF + ".[usr:Calculation_Weather:qk]"
-            fmt += f"<style-rule element='axis'><format attr='title' class='0' field={a(axis)} scope='cols' value='Selected weather (units in control)' /></style-rule>"
+            # The datagraph below binds this cached title to Parameter 3.
+            fmt += f"<style-rule element='axis'><format attr='title' class='0' field={a(axis)} scope='cols' value={a(PARAMS['Parameter 3']['value'])} /></style-rule>"
         style = f"<style>{fmt}{self.extra_style}<style-rule element='table'><format attr='background-color' value='{BG}' /></style-rule></style>"
 
         title = f"<layout-options><title><formatted-text>{self.title_runs}</formatted-text></title></layout-options>" if self.title_runs else ""
@@ -300,7 +321,8 @@ class Sheet:
                 f"{filt}{slices}<aggregation value='true' /></view>{style}"
                 f"<panes><pane selection-relaxation-option='selection-relaxation-allow'><view><breakdown value='auto' /></view>"
                 f"<mark class='{self.mark}' /><encodings>{enc}</encodings>{trend}{tip}{lab}{pane_style}</pane></panes>"
-                f"<rows>{escape(shelf(self.rows))}</rows><cols>{escape(shelf(self.cols))}</cols></table></worksheet>")
+                f"<rows>{escape(shelf(self.rows))}</rows><cols>{escape(shelf(self.cols))}</cols></table>"
+                f"<simple-id uuid={a(sheet_id(self.name))} /></worksheet>")
 
 
 # ------------------------------------------------------------------ sheet specs
@@ -331,7 +353,7 @@ SHEETS = [
     kpi("KPI Kids per Night", "Calculation_KidsPerNight", "User", "kids per Halloween, on average", "n#,##0"),
     kpi("KPI Peak Hour", "Calculation_PeakShare", "User", "arrive between 6:30 and 7:30 pm", "p0%", PURPLE),
     kpi("KPI Rain Effect", "Calculation_RainEffect", "User", "average turnout: rain vs. dry nights", "p0%", RAIN),
-    kpi("KPI Arrival Time", "Calculation_ArrTime", "User", "average arrival time (kid-weighted)", None, ORANGE),
+    kpi("KPI Arrival Time", "Calculation_ArrTime", "User", "estimated average arrival", None, ORANGE),
 
     Sheet("Year by Year",
           title("Every Halloween, 2008–2025", "Kids per night · click a bar to highlight its year"),
@@ -356,17 +378,17 @@ SHEETS = [
                 "Kids per window · sunset ≈ 6:37 pm EDT · final window is 15 min"),
           "Bar", rows=[("Calculation_KidsPerNight", "User")], cols=[("Interval Order", "None")],
           enc={"color": [("Light", "None")], "text": [("Calculation_Share", "User")],
-               "tooltip": [("Calculation_KidsPerNight", "User"), ("Calculation_WindowLength", "None"), ("Calculation_RateLabel", "User")]},
+               "tooltip": [("Calculation_KidsPerNight", "User"), ("Calculation_WindowLength", "User"), ("Calculation_RateLabel", "User")]},
           label_show=True,
           tooltip=(field_run("[none:Interval Order:ok]", size=12, bold=True, color=ORANGE, font=T) + run("  ·  ") + field_run("[none:Light:nk]") + NL
                    + tip_line("Average kids per night: ", "[usr:Calculation_KidsPerNight:qk]")
                    + tip_line("Share of all kids: ", "[usr:Calculation_Share:qk]")
-                   + tip_line("Window length: ", "[none:Calculation_WindowLength:nk]")
+                   + tip_line("Window length: ", "[usr:Calculation_WindowLength:nk]")
                    + tip_line("Average kids per 15 min: ", "[usr:Calculation_RateLabel:nk]")),
           formats={("Calculation_KidsPerNight", "User"): "n#,##0", ("Calculation_Share", "User"): "p0%"}),
 
     Sheet("Rush Hour Heatmap",
-          title("The rush, half-hour by half-hour", "Kids per window · darker = more · last window is 15 min"),
+          title("The trick-or-treat rush", "Kids per window · final window is 15 min"),
           "Square", rows=[("Year", "None")], cols=[("Interval Order", "None")],
           enc={"color": [("Count", "Sum")], "text": [("Count", "Sum")], "tooltip": [("Rain or Dry", "Attribute"), ("Interval Temp F", "Avg")]},
           label_show=True,
@@ -393,16 +415,37 @@ SHEETS = [
                    ("Night Max Gust Mph", "Avg"): "n#,##0"}),
 
     Sheet("Arrival Time Trend",
-          title("Are arrivals shifting earlier?", "60 = 7:00 pm · lower = earlier · line = overall fit"),
+          title("Are arrivals shifting earlier?", "Estimated from window midpoints · 60 = 7 pm · lower = earlier"),
           "Circle", rows=[("Calculation_ArrMin", "User")], cols=[("Year", "Continuous")],
           enc={"lod": [("Year", "None")], "color": [("Rain or Dry", "None")], "tooltip": [("Calculation_ArrTime", "User"), ("Conditions", "Attribute")]},
           mark_size="1.0",
           tooltip=(field_run("[none:Year:ok]", size=12, bold=True, color=ORANGE, font=T) + NL
-                   + tip_line("Average arrival: ", "[usr:Calculation_ArrTime:nk]")
+                   + tip_line("Estimated average arrival: ", "[usr:Calculation_ArrTime:nk]")
                    + tip_line("Conditions: ", "[attr:Conditions:nk]")),
           formats={("Calculation_ArrMin", "User"): "n#,##0"}),
 ]
 
+# Expose the comparison behind the percentage, including the number of nights.
+rain_kpi = SHEETS[2]
+rain_fields = ["Calculation_RainAvg", "Calculation_RainN", "Calculation_DryAvg", "Calculation_DryN"]
+rain_kpi.enc["text"] += [(f, "User") for f in rain_fields]  # label runs can only read Text-shelf fields
+rain_kpi.formats.update({(f, "User"): "n#,##0" for f in rain_fields})
+comparison = (run("Rain ", size=9, color=INK, font=B)
+              + field_run(inst("Calculation_RainAvg", "User")[0], size=9, color=INK, font=B)
+              + run(" (n=", size=9, color=INK, font=B)
+              + field_run(inst("Calculation_RainN", "User")[0], size=9, color=INK, font=B)
+              + run(") · Dry ", size=9, color=INK, font=B)
+              + field_run(inst("Calculation_DryAvg", "User")[0], size=9, color=INK, font=B)
+              + run(" (n=", size=9, color=INK, font=B)
+              + field_run(inst("Calculation_DryN", "User")[0], size=9, color=INK, font=B)
+              + run(")", size=9, color=INK, font=B))
+rain_kpi.label += NL + comparison
+rain_kpi.tooltip = (run("Average kids per Halloween; n = number of nights.", font=B) + NL + comparison)
+
+arrival_kpi = SHEETS[3]
+arrival_kpi.label = (run("≈ ", size=30, bold=True, color=ORANGE, font=T) + arrival_kpi.label
+                     + NL + run("kid-weighted · interval midpoints", size=9, color=MUTED, font=B))
+arrival_kpi.tooltip = run("Estimated from interval midpoints, not individual arrival timestamps. Early arrivals use a representative 5:45 pm midpoint.", font=B)
 
 SHEETS[5].title_runs += (NL + run("■", size=9, color="#BBA8E0", font=B) + run(" Daylight    ", size=9, color=INK, font=B)
                          + run("■", size=9, color="#8566BE", font=B) + run(" Twilight    ", size=9, color=INK, font=B)
@@ -478,30 +521,36 @@ def dashboard_xml():
     # row 2
     z.append(sheet_zone("Year by Year", 16, 242, 900, 380))
     z.append(legend_zone("Year by Year", "[none:Calculation_ColorBy:nk]", 922, 252, 196, 150))
-    z.append(text_zone(922, 338, 196, 198,
+    z.append(text_zone(922, 338, 196, 274,
                        run("WHAT STANDS OUT", size=9, bold=True, color=ORANGE, font=T) + NL
-                       + run("Rain and wind align with smaller crowds. 2013 (rain + 47 mph gusts) drew 391 kids; cold 2017 (36°F feels-like) drew 776. Weekend nights averaged 595 vs. 632 on school nights (5 vs. 12 years; 2020 excluded).", size=9, color=INK, font=B),
+                       + run("Rain and wind align with smaller crowds.", size=10, color=INK, font=B) + NL + NL
+                       + run("2013: 391 kids, rain + 47 mph gusts.", size=10, color=INK, font=B) + NL
+                       + run("2017: 776 kids, 36°F feels-like.", size=10, color=INK, font=B) + NL + NL
+                       + run("Weekend nights: 595 kids vs. 632 on school nights (5 vs. 12 years; excludes 2020).", size=10, color=INK, font=B),
                        bg="#FFFFFF", margin=8))
     z.append(sheet_zone("Arrival Curve", 1126, 242, 778, 380))
     # row 3
-    z.append(sheet_zone("Rush Hour Heatmap", 16, 630, 600, 382))
-    z.append(sheet_zone("Weather Explorer", 624, 630, 660, 382))
-    z.append(sheet_zone("Arrival Time Trend", 1292, 630, 612, 382))
-    # Count scale is distinct from the categorical weather legend above it.
-    z.append(text_zone(922, 540, 196, 24, run("HEATMAP: KIDS PER WINDOW", size=8, bold=True, color=INK, font=T), margin=4))
-    z.append(legend_zone("Rush Hour Heatmap", "[sum:Count:qk]", 922, 564, 196, 55))
+    z.append(sheet_zone("Rush Hour Heatmap", 16, 630, 600, 356))
+    z.append(sheet_zone("Weather Explorer", 624, 630, 660, 356))
+    z.append(sheet_zone("Arrival Time Trend", 1292, 630, 612, 356))
+    # Keep the continuous count scale inside its own chart header.
+    z.append(legend_zone("Rush Hour Heatmap", "[sum:Count:qk]", 408, 636, 200, 56))
     # footer
-    z.append(text_zone(0, 1018, 1920, 62,
-                       run("SOURCES  ", size=8, bold=True, color=INK, font=T)
-                       + run("Counts: Jeffrey Shaffer, HalloweenTableau2025.xlsx. Weather: Open-Meteo Historical Weather API / ERA5 (ECMWF/Copernicus), open-meteo.com/en/docs/historical-weather-api. Sun position: NOAA Global Monitoring Laboratory, General Solar Position Calculations.", size=8, color=MUTED, font=B) + NL
-                       + run("METHOD  ", size=8, bold=True, color=INK, font=T)
-                       + run("Cincinnati 39.135, −84.470. Weather timestamps corrected to EDT; rain = ≥ 0.01 in from 6–8 pm. Counts cover the window ending at the logged time; 8:00–8:15 is 15 min. Repeated night-level fields use AVG/ATTR. Small sample: associations, not causation. ", size=8, color=MUTED, font=B)
-                       + run("Individual class project", size=8, bold=True, color=PURPLE, font=T),
+    z.append(text_zone(0, 994, 1920, 86,
+                       run("SOURCES  ", size=9, bold=True, color=INK, font=T)
+                       + run("Counts: Jeffrey Shaffer, HalloweenTableau2025.xlsx. Weather: Open-Meteo Historical Weather API / ERA5 (ECMWF/Copernicus), open-meteo.com/en/docs/historical-weather-api. Sun position: NOAA Global Monitoring Laboratory, General Solar Position Calculations.", size=9, color=MUTED, font=B) + NL
+                       + run("METHOD  ", size=9, bold=True, color=INK, font=T)
+                       + run("Weather timestamps corrected to EDT; rain = ≥ 0.01 in from 6–8 pm. Counts cover the window ending at the logged time; final window = 15 min. Arrival times are estimated from window midpoints. Repeated night-level fields use AVG/ATTR. Small sample: associations, not causation. ", size=9, color=MUTED, font=B)
+                       + run("Individual class project", size=9, bold=True, color=PURPLE, font=T),
                        bg="#F1EBE2", margin=6))
     inner = "".join(z)
     return (f"<dashboards><dashboard name={a(DASH)}><style><style-rule element='table'><format attr='background-color' value='{BG}' /></style-rule></style>"
             f"<size maxheight='{H}' maxwidth='{W}' minheight='{H}' minwidth='{W}' />"
+            "<datasources><datasource name='Parameters' /></datasources>"
+            + "<datasource-dependencies datasource='Parameters'>" + "".join(param_col(p) for p in PARAMS) + "</datasource-dependencies>"
+            +
             f"<zones><zone h='100000' id='2' type='layout-basic' w='100000' x='0' y='0'>{inner}</zone></zones>"
+            f"<simple-id uuid={a(sheet_id(DASH))} />"
             f"</dashboard></dashboards>")
 
 
@@ -587,11 +636,28 @@ def workbook_xml(filename):
     return ("<?xml version='1.0' encoding='utf-8' ?>\n"
             "<workbook source-build='2026.3.0 (20263.26.1022.1645)' source-platform='mac' version='18.1' "
             "xmlns:user='http://www.tableausoftware.com/xml/user'>"
-            "<document-format-change-manifest><ObjectModelEncapsulateLegacy /><ObjectModelTableType /><SchemaViewerObjectModel /></document-format-change-manifest>"
+            "<document-format-change-manifest><DatagraphCoreV1 /><DatagraphNodeAxisTitle /><DatagraphNodeSingleValueFieldV1 /><ObjectModelEncapsulateLegacy /><ObjectModelTableType /><SchemaViewerObjectModel /><SheetIdentifierTracking /></document-format-change-manifest>"
             "<preferences><preference name='ui.encoding.shelf.height' value='24' /><preference name='ui.shelf.height' value='26' /></preferences>"
             "<style><style-rule element='worksheet'><format attr='font-family' value='Tableau Book' /><format attr='font-size' value='9' /></style-rule></style>"
             f"<datasources>{params}{datasource_xml(cols, nrows, filename)}</datasources>"
-            f"{actions_xml()}{worksheets}{dashboard_xml()}{windows_xml()}</workbook>")
+            f"{actions_xml()}{worksheets}{dashboard_xml()}{windows_xml()}{dynamic_axis_xml()}</workbook>")
+
+
+def dynamic_axis_xml():
+    """Native Tableau parameter-to-axis binding, captured in Desktop 2026.3.
+
+    The worksheet UUID must match the axis node's sheet-identifier. A static
+    cached title alone would look correct initially but fail on parameter changes.
+    """
+    graph = "f44debb6-2a49-4fdc-b141-a1b4bf9326f4"
+    axis = "f47b1186-999b-499b-91dd-f2c13afbe5c7"
+    parameter = "57f123de-d1e8-4823-aeb4-32bfdd898fbb"
+    return (f"<datagraph><graph><properties><default-execution-subgraph-guid value='{graph}' /></properties>"
+            f"<node-execution-subgraphs><pair execution-subgraph-guid='{graph}' node-guid='{axis}' />"
+            f"<pair execution-subgraph-guid='{graph}' node-guid='{parameter}' /></node-execution-subgraphs>"
+            f"<nodes><single-value-field-node fieldname='[Parameters].[Parameter 3]' fieldname-input-guid='569bc973-6582-45c9-ad6e-8e2c7ab32d6c' node-guid='{parameter}' value-output-guid='09776e2c-0cce-4e7c-8d69-0ae488fe329a' />"
+            f"<axis-title-node duplicate-index='0' fieldname={a(DSREF + '.[usr:Calculation_Weather:qk]')} node-guid='{axis}' orientation='horizontal' sheet-identifier={a(sheet_id('Weather Explorer'))} title-input-guid='ef8aa932-a1e5-4c42-8c2e-eb6a6cd905b9' /></nodes>"
+            "<edges><edge from='09776e2c-0cce-4e7c-8d69-0ae488fe329a' to='ef8aa932-a1e5-4c42-8c2e-eb6a6cd905b9' /></edges><pin-values /></graph></datagraph>")
 
 
 def main():

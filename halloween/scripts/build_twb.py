@@ -574,7 +574,9 @@ def worksheet_cards(s):
 
 
 def windows_xml():
-    w = "".join(f"<window class='worksheet' name={a(s.name)}>{worksheet_cards(s)}</window>" for s in SHEETS)
+    # Worksheet tabs are hidden so the workbook opens to the dashboard only;
+    # the sheets still exist (right-click the dashboard tab > Unhide All Sheets).
+    w = "".join(f"<window class='worksheet' hidden='true' name={a(s.name)}>{worksheet_cards(s)}</window>" for s in SHEETS)
     vp = "".join(f"<viewpoint name={a(s.name)}><zoom type='entire-view' /></viewpoint>" for s in SHEETS)
     w += (f"<window class='dashboard' maximized='true' name={a(DASH)}><viewpoints>{vp}</viewpoints><active id='-1' />"
           f"<device-preview><device is-portrait='true' name='Generic Phone' type='Phone' /></device-preview></window>")

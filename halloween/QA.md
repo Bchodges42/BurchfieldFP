@@ -67,3 +67,4 @@ Re-verified in Tableau Desktop 2026.3 after a rubric review:
 - Native export reviewed: `tableau/Halloween Dashboard.png`.
 - Plain-English rewrite of all dashboard text (titles, KPI captions, how-to, notes, footer, tooltips); no statistics changed. Controls renamed: COVID year, Color bars by, Weather on scatter plot.
 - Temperature and weekend colors changed (Chilly teal, Mild gray, Warm red; Weekend teal) so they never reuse the rain-blue / dry-orange pair.
+- Worksheet tabs are hidden so the workbook opens to the dashboard only (right-click the dashboard tab > Unhide All Sheets to see them).

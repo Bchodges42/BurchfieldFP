@@ -8,7 +8,7 @@ Original HTML concept preview (not Tableau output; final workbook uses a purple 
 
 | Path | What it is |
 |---|---|
-| `tableau/Halloween Weather and Trick-or-Treaters.twbx` | **The Tableau workbook** (data packaged inside): 9 sheets plus a 1920 × 1080 dashboard |
+| `tableau/Halloween Weather and Trick-or-Treaters.twbx` | **The Tableau workbook** (data packaged inside): 9 sheets (tabs hidden, so it opens to the dashboard) plus a 1920 × 1080 dashboard |
 | `tableau/Halloween Weather and Trick-or-Treaters.twb` + `tableau/Halloween_Enriched.xlsx` | The same workbook unpackaged. Keep both files in the same folder. |
 | `tableau/Halloween Dashboard.png` | Actual full-dashboard PNG exported by Tableau Desktop (not the HTML preview) |
 | `data/Halloween_Enriched.xlsx` | The enriched data source. Sheets: **Intervals** (108 rows, used by Tableau), **Year Summary** (18 rows), **Data Dictionary**, **Sources** |

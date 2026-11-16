@@ -517,14 +517,21 @@ def dashboard_xml():
     z.append(text_zone(1350, 204, 554, 30,
                        run("2020 is left out by default. COVID changed how people trick-or-treated that year.", size=8, italic=True, color=MUTED, font=B), margin=4))
     # row 2
-    z.append(sheet_zone("Year by Year", 16, 242, 900, 380))
-    z.append(legend_zone("Year by Year", "[none:Calculation_ColorBy:nk]", 922, 252, 196, 150))
-    z.append(text_zone(922, 338, 196, 274,
+    z.append(sheet_zone("Year by Year", 16, 242, 840, 380))
+    z.append(legend_zone("Year by Year", "[none:Calculation_ColorBy:nk]", 862, 252, 256, 90))
+    # Candy plan numbers come from data/years.csv (2020 excluded): calm, dry nights
+    # (no rain 6-8 pm, gusts under 25 mph) averaged 687 kids over 10 nights; nights with
+    # rain or gusts of 25+ mph averaged 526 over 7; the most ever was 869 (2011).
+    z.append(text_zone(862, 344, 256, 268,
                        run("KEY POINTS", size=9, bold=True, color=ORANGE, font=T) + NL
-                       + run("Rain and wind mean fewer kids. Cold doesn't seem to matter.", size=10, color=INK, font=B) + NL + NL
+                       + run("Rain and wind mean fewer kids. Cold doesn't seem to matter.", size=10, color=INK, font=B) + NL
                        + run("2013: rain and 47 mph gusts. Only 391 kids.", size=10, color=INK, font=B) + NL
-                       + run("2017: felt like 36°F. Still 776 kids.", size=10, color=INK, font=B) + NL + NL
-                       + run("Weekends weren't busier: 595 kids vs. 632 on school nights.", size=10, color=INK, font=B),
+                       + run("2017: felt like 36°F. Still 776 kids.", size=10, color=INK, font=B) + NL
+                       + run("Weekends weren't busier: 595 kids vs. 632 on school nights.", size=10, color=INK, font=B) + NL + NL
+                       + run("CANDY PLAN", size=9, bold=True, color=ORANGE, font=T) + NL
+                       + run("Calm, dry night: about 690 kids.", size=10, color=INK, font=B) + NL
+                       + run("Rain or strong wind: about 530.", size=10, color=INK, font=B) + NL
+                       + run("Most ever was 869, so 870 pieces covers any year so far.", size=10, color=INK, font=B),
                        bg="#FFFFFF", margin=8))
     z.append(sheet_zone("Arrival Curve", 1126, 242, 778, 380))
     # row 3

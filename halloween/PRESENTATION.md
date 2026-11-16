@@ -30,7 +30,7 @@ Use the actual Tableau dashboard. Start with Exclude 2020, Rain or dry, and Wind
 
 **2:40–3:00 — Practical takeaway and limits**
 
-“For this household, about 650 portions is a reasonable planning baseline, with a smaller crowd possible in rain or strong wind. Be ready by 6:15. This describes one porch and a small number of nights; neighborhood conditions and weather reanalysis also limit how far we can generalize.”
+“For this household, plan for about 690 kids on a calm, dry night and about 530 if it rains or gusts reach 25 mph. The most ever was 869. Be ready by 6:15. This describes one porch and a small number of nights; neighborhood conditions and weather reanalysis also limit how far we can generalize.”
 
 ## Likely questions
 

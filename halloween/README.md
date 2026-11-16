@@ -36,7 +36,7 @@ All figures exclude 2020 unless noted. 2020 was the COVID candy-chute year (219 
 5. **Arrivals are drifting earlier over time**, by about 5 minutes per decade (7:08 pm in 2008, 7:00 pm in 2025). The busiest half-hour moved from 7:00–7:30 (2008–2012) to 6:30–7:00 (most years since 2015).
 6. **Weekends don't help.** Friday and Saturday Halloweens averaged 595 kids, vs. 632 on school nights. With only 5 weekend years, day of week is not a driver here.
 
-Planning advice for the homeowner: stock for about 650 kids. Expect ~150 fewer if rain or strong wind is forecast, have the porch ready by 6:15, and expect the peak right after sunset.
+Planning advice for the homeowner: plan for about 690 kids on a calm, dry night (average of 10 such nights) and about 530 if rain or gusts of 25+ mph are forecast (average of 7 nights); the most ever was 869 (2011). Also have the porch ready by 6:15, and expect the peak right after sunset.
 
 ### Caveats (worth one sentence in the presentation)
 * 17 usable years is a small sample. These are associations, not proof of cause.
@@ -171,7 +171,7 @@ New Dashboard → **Size: Fixed, 1920 × 1080**. Lay it out as in the table abov
 3. **Finding 1:** rain and wind cut the crowd by about a fifth, but cold doesn't. Show the weather explorer and switch the x-axis from *Feels-like temp* (flat) to *Wind gust* (r = −0.65).
 4. **Finding 2:** half the kids arrive in the hour after sunset. Show the arrival curve, then the heatmap.
 5. **Finding 3:** storms push arrivals earlier, and kids are arriving earlier every year. Show the arrival-time trend and click 2013.
-6. **So what:** buy candy for about 650. Cut back about 150 if rain or wind is forecast. Be on the porch by 6:15.
+6. **So what:** buy for about 690 on a calm, dry night, about 530 in rain or strong wind; 870 covers every year so far. Be on the porch by 6:15.
 
 ## Email to the instructor (optional template; not sent)
 

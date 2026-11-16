@@ -68,3 +68,4 @@ Re-verified in Tableau Desktop 2026.3 after a rubric review:
 - Plain-English rewrite of all dashboard text (titles, KPI captions, how-to, notes, footer, tooltips); no statistics changed. Controls renamed: COVID year, Color bars by, Weather on scatter plot.
 - Temperature and weekend colors changed (Chilly teal, Mild gray, Warm red; Weekend teal) so they never reuse the rain-blue / dry-orange pair.
 - Worksheet tabs are hidden so the workbook opens to the dashboard only (right-click the dashboard tab > Unhide All Sheets to see them).
+- Candy plan added to Key points, computed from data/years.csv (2020 excluded): calm, dry nights averaged 687 kids (n=10), rain or gusts of 25+ mph averaged 526 (n=7), max 869.
